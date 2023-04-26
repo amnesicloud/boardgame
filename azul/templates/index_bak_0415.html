@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul</title>
+    <script>
+        async function getAvailableColors(source) {
+            const response = await fetch('/available_colors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `source=${source}`,
+            });
+
+            if (response.ok) {
+                const colors = await response.json();
+                return colors;
+            } else {
+                console.error('Failed to fetch available colors:', response.statusText);
+                return [];
+            }
+        }
+
+        async function getAvailablePatternLines(color) {
+            const response = await fetch('/available_pattern_lines', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `color=${color}`,
+            });
+
+            if (response.ok) {
+                const pattern_lines = await response.json();
+                return pattern_lines;
+            } else {
+                console.error('Failed to fetch available pattern lines:', response.statusText);
+                return [];
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Your HTML structure -->
+
+    <div id="game-state-container" data-game-state="{{ game_state|escape }}"></div>
+    <!-- Select Source -->
+    <div id="source-section">
+        <!-- ... -->
+    </div>
+
+    <!-- Select Color -->
+    <div id="color-section" style="display: none;">
+        <!-- ... -->
+    </div>
+
+    <!-- Select Pattern Line -->
+    <div id="pattern-line-section" style="display: none;">
+        <!-- ... -->
+    </div>
+
+    <h1>Azul Game</h1>
+
+    <h2>Select Source</h2>
+    <h2>Center</h2>
+    <button id="btn-center" onclick="takeTiles('center')">Take Tiles</button>
+
+    <h2>Factories</h2>
+    <button id="btn-factory-1" onclick="takeTiles('factory1')">Take Tiles from Factory 1</button>
+    <button id="btn-factory-2" onclick="takeTiles('factory2')">Take Tiles from Factory 2</button>
+    <button id="btn-factory-3" onclick="takeTiles('factory3')">Take Tiles from Factory 3</button>
+    <button id="btn-factory-4" onclick="takeTiles('factory4')">Take Tiles from Factory 4</button>
+    <button id="btn-factory-5" onclick="takeTiles('factory5')">Take Tiles from Factory 5</button>
+
+
+    <h2>Select Color</h2>
+    <button class="color-select" data-color="red">Red</button>
+    <button class="color-select" data-color="black">Black</button>
+    <button class="color-select" data-color="yellow">Yellow</button>
+    <button class="color-select" data-color="white">White</button>
+    <button class="color-select" data-color="blue">Blue</button>
+    <!-- Add similar buttons for other colors -->
+
+    <h2>Select Pattern Line</h2>
+    <button class="pattern-line-select" data-pattern-line-index="0">Pattern Line 0</button>
+    <button class="pattern-line-select" data-pattern-line-index="1">Pattern Line 1</button>
+    <button class="pattern-line-select" data-pattern-line-index="2">Pattern Line 2</button>
+    <button class="pattern-line-select" data-pattern-line-index="3">Pattern Line 3</button>
+    <button class="pattern-line-select" data-pattern-line-index="4">Pattern Line 4</button>
+    <!-- Add similar buttons for other pattern lines -->
+
+<!--    <script>-->
+<!--        document.addEventListener('DOMContentLoaded', function() {-->
+<!--            // gameState loading-->
+<!--            gameState = {{ game_state | tojson | safe }};-->
+
+<!--            // Event listeners for source buttons-->
+<!--            const sourceButtons = document.querySelectorAll('.source-button');-->
+<!--            sourceButtons.forEach(button => {-->
+<!--                button.addEventListener('click', async () => {-->
+<!--                    const source = button.textContent;-->
+<!--                    const availableColors = await getAvailableColors(source);-->
+<!--                    showColorSection(availableColors, source);-->
+<!--                });-->
+<!--            });-->
+
+<!--            // Event listeners for color buttons-->
+<!--            // ... (similar to the source buttons event listeners)-->
+
+<!--            // Event listeners for pattern line buttons-->
+<!--            // ... (similar to the source buttons event listeners)-->
+
+<!--            // Functions to show/hide sections-->
+<!--            // ... (the code I provided in the previous response)-->
+<!--        });-->
+<!--    </script>-->
+
+    <script>
+        var gameState;
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameStateContainer = document.getElementById('game-state-container');
+            const gameState = JSON.parse(gameStateContainer.dataset.gameState);
+
+            console.log(gameState);
+            console.log(gameState.center);
+
+            const centerTiles = gameState.center.tiles;
+            console.log(centerTiles);
+            const sourceSelectButtons = document.querySelectorAll('.source-select');
+            const colorSelectButtons = document.querySelectorAll('.color-select');
+            const patternLineSelectButtons = document.querySelectorAll('.pattern-line-select');
+            let selectedSource = -1;
+            let selectedColor = null;
+            let selectedPatternLine = -1;
+
+            sourceSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedSource = parseInt(button.dataset.sourceIndex);
+                });
+            });
+
+            colorSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedColor = button.dataset.color;
+                });
+            });
+
+            patternLineSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedPatternLine = parseInt(button.dataset.patternLineIndex);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        function takeTiles(location) {
+            // Your logic for taking tiles goes here
+            console.log('Taking tiles from:', location);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul Game</title>
+
+
+
+
+</head>
+<body>
+    <div id="game-state-container" data-game-state="{{ game_state|escape }}"></div>
+    <!-- Select Source -->
+    <div id="source-section">
+        <!-- ... -->
+    </div>
+
+    <!-- Select Color -->
+    <div id="color-section" style="display: none;">
+        <!-- ... -->
+    </div>
+
+    <!-- Select Pattern Line -->
+    <div id="pattern-line-section" style="display: none;">
+        <!-- ... -->
+    </div>
+
+    <h1>Azul Game</h1>
+
+    <h2>Select Source</h2>
+    <h2>Center</h2>
+    <button id="btn-center" onclick="takeTiles('center')">Take Tiles</button>
+
+    <h2>Factories</h2>
+    <button id="btn-factory-1" onclick="takeTiles('factory1')">Take Tiles from Factory 1</button>
+    <button id="btn-factory-2" onclick="takeTiles('factory2')">Take Tiles from Factory 2</button>
+    <button id="btn-factory-3" onclick="takeTiles('factory3')">Take Tiles from Factory 3</button>
+    <button id="btn-factory-4" onclick="takeTiles('factory4')">Take Tiles from Factory 4</button>
+    <button id="btn-factory-5" onclick="takeTiles('factory5')">Take Tiles from Factory 5</button>
+
+
+    <h2>Select Color</h2>
+    <button class="color-select" data-color="red">Red</button>
+    <button class="color-select" data-color="black">Black</button>
+    <button class="color-select" data-color="yellow">Yellow</button>
+    <button class="color-select" data-color="white">White</button>
+    <button class="color-select" data-color="blue">Blue</button>
+    <!-- Add similar buttons for other colors -->
+
+    <h2>Select Pattern Line</h2>
+    <button class="pattern-line-select" data-pattern-line-index="0">Pattern Line 0</button>
+    <button class="pattern-line-select" data-pattern-line-index="1">Pattern Line 1</button>
+    <button class="pattern-line-select" data-pattern-line-index="2">Pattern Line 2</button>
+    <button class="pattern-line-select" data-pattern-line-index="3">Pattern Line 3</button>
+    <button class="pattern-line-select" data-pattern-line-index="4">Pattern Line 4</button>
+    <!-- Add similar buttons for other pattern lines -->
+
+    <script>
+        var gameState;
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameStateContainer = document.getElementById('game-state-container');
+            const gameState = JSON.parse(gameStateContainer.dataset.gameState);
+
+            console.log(gameState);
+            console.log(gameState.center);
+
+            const centerTiles = gameState.center.tiles;
+            console.log(centerTiles);
+            const sourceSelectButtons = document.querySelectorAll('.source-select');
+            const colorSelectButtons = document.querySelectorAll('.color-select');
+            const patternLineSelectButtons = document.querySelectorAll('.pattern-line-select');
+            let selectedSource = -1;
+            let selectedColor = null;
+            let selectedPatternLine = -1;
+
+            sourceSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedSource = parseInt(button.dataset.sourceIndex);
+                });
+            });
+
+            colorSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedColor = button.dataset.color;
+                });
+            });
+
+            patternLineSelectButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    selectedPatternLine = parseInt(button.dataset.patternLineIndex);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        function takeTiles(location) {
+            // Your logic for taking tiles goes here
+            console.log('Taking tiles from:', location);
+        }
+    </script>
+
+    <script>
+        // Add this function to your JavaScript code
+        function showColorSection(availableColors) {
+            const colorSection = document.getElementById('color-section');
+            colorSection.innerHTML = '';
+
+            availableColors.forEach(color => {
+                const button = document.createElement('button');
+                button.textContent = color;
+                button.addEventListener('click', () => {
+                    // TODO: Handle color selection
+                });
+                colorSection.appendChild(button);
+            });
+
+            colorSection.style.display = 'block';
+        }
+
+        // Add event listeners to the source buttons
+        const sourceButtons = document.querySelectorAll('.source-button');
+        sourceButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Hide the source section
+                document.getElementById('source-section').style.display = 'none';
+
+                // Show the color section with the available colors for the selected source
+                const availableColors = /* Get available colors based on the selected source */;
+                showColorSection(availableColors);
+            });
+        });
+
+    </script>
+
+    <script>
+        // Add this function to your JavaScript code
+        function showPatternLineSection(availablePatternLines) {
+            const patternLineSection = document.getElementById('pattern-line-section');
+            patternLineSection.innerHTML = '';
+
+            availablePatternLines.forEach(line => {
+                const button = document.createElement('button');
+                button.textContent = line;
+                button.addEventListener('click', () => {
+                    // TODO: Handle pattern line selection
+                });
+                patternLineSection.appendChild(button);
+            });
+
+            patternLineSection.style.display = 'block';
+        }
+
+        // Update the showColorSection function to add event listeners to the color buttons
+        function showColorSection(availableColors) {
+            // ...
+            availableColors.forEach(color => {
+                // ...
+                button.addEventListener('click', () => {
+                    // Hide the color section
+                    document.getElementById('color-section').style.display = 'none';
+
+                    // Show the pattern line section with the available pattern lines for the selected color
+                    const availablePatternLines = /* Get available pattern lines based on the selected color */;
+                    showPatternLineSection(availablePatternLines);
+                });
+                // ...
+            });
+            // ...
+        }
+
+    </script>
+
+</body>
+
+
+</html>

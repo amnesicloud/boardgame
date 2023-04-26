@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul Game</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+<body>
+    <h1>Azul Game</h1>
+    <div id="game-container">
+        <div id="factories">
+            {% for factory in game_state.factories %}
+            <div class="factory" onclick="selectFactory({{ loop.index0 }})">Factory {{ loop.index }}: {{ factory.tiles|join(', ') }}</div>
+            {% endfor %}
+        </div>
+
+        <div id="center" onclick="selectCenter()">Center Area: {{ game_state.center.tiles|join(', ') }}</div>
+        <div id="colors"></div>
+        <div id="players"></div>
+    </div>
+    <!-- Add a new section for color and pattern line selection -->
+    <div id="selection-section">
+        <h3>Select Color:</h3>
+        <button class="color-select" data-color="red">Red</button>
+        <!-- Add similar buttons for other colors -->
+
+        <h3>Select Pattern Line:</h3>
+        <button class="pattern-line-select" data-pattern-line-index="0">Pattern Line 0</button>
+        <!-- Add similar buttons for other pattern lines -->
+    </div>
+
+    <select id="factory-select" onchange="displayColors()">
+        <option value="-1">Center</option>
+        <option value="0">Factory 1</option>
+        <option value="1">Factory 2</option>
+        <!-- Add more factories as needed -->
+    </select>
+
+    <script>
+        let selectedFactory = null;
+        let selectedColor = null;
+
+        function handleColorSelect(event) {
+          const color = event.target.dataset.color;
+          selectedColor = color;
+          console.log('Selected color:', selectedColor);
+        }
+
+        function handlePatternLineSelect(event) {
+          if (!selectedColor) {
+            alert('Please select a color first.');
+            return;
+          }
+
+          const patternLineIndex = parseInt(event.target.dataset.patternLineIndex, 10);
+          console.log('Selected pattern line:', patternLineIndex);
+          // TODO: Place the selectedColor on the patternLineIndex in the game state and update the display.
+          selectedColor = null;
+        }
+
+        function init() {
+          const factoryButtons = document.querySelectorAll('.factory-select');
+          factoryButtons.forEach((button) => {
+            button.addEventListener('click', handleFactorySelect);
+          });
+
+          // Add these lines:
+          const colorButtons = document.querySelectorAll('.color-select');
+          colorButtons.forEach((button) => {
+            button.addEventListener('click', handleColorSelect);
+          });
+
+          const patternLineButtons = document.querySelectorAll('.pattern-line-select');
+          patternLineButtons.forEach((button) => {
+            button.addEventListener('click', handlePatternLineSelect);
+          });
+
+          displayGameState();
+        }
+
+        function selectColor(color) {
+            console.log("Selected color:", color);
+            // Implement the logic for choosing a pattern line and placing tiles here.
+        }
+
+        function selectFactory(index) {
+            selectedFactory = index;
+            console.log("Selected factory:", index);
+            displayColors();
+        }
+
+        function selectCenter() {
+            selectedFactory = "center";
+            console.log("Selected center area");
+            displayColors();
+        }
+
+        function displayColors() {
+            const selectedFactory = parseInt(document.getElementById('selectedFactory').value);
+            const colors = (selectedFactory === -1)
+                ? gameState.center.tiles
+                : gameState.factories[selectedFactory].tiles;
+
+            console.log("selectedFactory:", selectedFactory);
+            console.log("game_state['center']['tiles']:", gameState.center.tiles);
+
+            if (selectedFactory >= 0 && selectedFactory < gameState.factories.length) {
+                console.log("game_state.factories[selectedFactory]:", gameState.factories[selectedFactory]);
+            } else {
+                console.log("Invalid selectedFactory value.");
+            }
+
+            const colorsContainer = document.getElementById('colors');
+            colorsContainer.innerHTML = '';
+
+            colors.forEach((color, index) => {
+                const colorElement = document.createElement('button');
+                colorElement.textContent = color;
+                colorElement.style.backgroundColor = color;
+                colorElement.classList.add('color');
+                colorElement.addEventListener('click', () => {
+                    selectColor(index);
+                });
+
+                colorsContainer.appendChild(colorElement);
+            });
+        }
+
+
+
+        function displayGameState(gameState) {
+            // Display factories
+            const factoriesDiv = document.getElementById('factories');
+            console.log('factoriesDiv:', factoriesDiv);
+            factoriesDiv.innerHTML = ''; // Clear previous content
+            console.log('factoriesDiv.innerHTML:', factoriesDiv.innerHTML);
+            console.log('gameState.factories:', gameState.factories)
+            gameState.factories.forEach((factory, index) => {
+                const factoryDiv = document.createElement('div');
+                factoryDiv.textContent = `Factory ${index + 1}: ${factory.tiles.join(', ')}`;
+                factoriesDiv.appendChild(factoryDiv);
+            });
+
+            // Display center area
+            const centerDiv = document.getElementById('center');
+            centerDiv.innerHTML = ''; // Clear previous content
+            centerDiv.textContent = `Center Area: ${gameState.center.tiles.join(', ')}`;
+
+            // Display player boards
+            const playersDiv = document.getElementById('players');
+            playersDiv.innerHTML = ''; // Clear previous content
+            gameState.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.textContent = `Player ${index + 1}: Pattern Lines: ${player.patternLines}, Wall: ${player.wall}, Floor: ${player.floor}`;
+                playersDiv.appendChild(playerDiv);
+            });
+        }
+
+
+        console.log('Script section executed'); // Debugging line
+
+        // Call the displayGameState function with the game state provided by the Flask app
+        const gameState = JSON.parse('{{ game_state|safe }}');
+        console.log('Game state:', gameState);
+        displayGameState(gameState);
+
+        document.querySelectorAll('.color-select').forEach((button) => {
+          button.addEventListener('click', (event) => {
+            // Handle color selection
+          });
+        });
+
+        document.querySelectorAll('.pattern-line-select').forEach((button) => {
+          button.addEventListener('click', (event) => {
+            // Handle pattern line selection
+          });
+        });
+
+
+    </script>
+</body>
+</html>

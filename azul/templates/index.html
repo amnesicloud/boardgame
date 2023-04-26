@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul</title>
+    <script>
+        async function getAvailableColors(source) {
+            const response = await fetch('/available_colors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `source=${encodeURIComponent(source)}`
+            });
+
+            const availableColors = await response.json();
+            return availableColors;
+        }
+
+
+        async function getAvailablePatternLines(playerId, color) {
+            const response = await fetch('/available_pattern_lines', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `player_id=${encodeURIComponent(playerId)}&color=${encodeURIComponent(color)}`
+            });
+
+            const availablePatternLines = await response.json();
+            return availablePatternLines;
+        }
+
+        function showColorSection(currentPlayer, availableColors, source) {
+            // Show the color section and hide the source section
+            document.getElementById('source-section').style.display = 'none';
+            document.getElementById('color-section').style.display = 'block';
+
+            // Create color buttons based on available colors
+            const colorContainer = document.getElementById('color-container');
+            colorContainer.innerHTML = '';
+
+            // Convert the object to an array and iterate over the array
+            Object.values(availableColors).forEach(color => {
+                const button = document.createElement('button');
+                button.textContent = color;
+                button.classList.add('color-button');
+                button.addEventListener('click', async () => {
+                    const availablePatternLines = await getAvailablePatternLines(currentPlayer, color);
+                    showPatternLineSection(availablePatternLines, source, color);
+                });
+                colorContainer.appendChild(button);
+            });
+        }
+
+
+        function showPatternLineSection(availablePatternLines, source, color) {
+            // Show the pattern line section and hide the color section
+            document.getElementById('color-section').style.display = 'none';
+            document.getElementById('pattern-line-section').style.display = 'block';
+
+            // Create pattern line buttons based on available pattern lines
+            const patternLineContainer = document.getElementById('pattern-line-container');
+            patternLineContainer.innerHTML = '';
+            availablePatternLines.forEach(patternLine => {
+                const button = document.createElement('button');
+                button.textContent = patternLine;
+                button.classList.add('pattern-line-button');
+                button.addEventListener('click', () => {
+                    // Perform the action with the selected source, color, and pattern line
+                    console.log(`Selected source: ${source}`);
+                    console.log(`Selected color: ${color}`);
+                    console.log(`Selected pattern line: ${patternLine}`);
+                });
+                patternLineContainer.appendChild(button);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="environment-section">
+        <h2>Environment</h2>
+        <div id="players-info"></div>
+        <div id="source-info"></div>
+    </div>
+    <div id="source-section">
+        <h2>Select Source</h2>
+        <div id="source-container">
+            <button class="source-button">Factory 0</button>
+            <button class="source-button">Factory 1</button>
+            <button class="source-button">Factory 2</button>
+            <button class="source-button">Factory 3</button>
+            <button class="source-button">Factory 4</button>
+            <button class="source-button">Center</button>
+        </div>
+    </div>
+
+    <div id="color-section" style="display: none;">
+        <h2>Select Color</h2>
+        <div id="color-container"></div>
+    </div>
+
+    <div id="pattern-line-section" style="display: none;">
+        <h2>Select Pattern Line</h2>
+        <div id="pattern-line-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // gameState loading
+            gameState = {{ game_state | tojson | safe }};
+            console.log(gameState);
+
+            // Initialize source buttons with event listeners
+            initializeSourceButtons(gameState);
+        });
+
+        function initializeSourceButtons(gameState) {
+            console.log(gameState);
+            const currentPlayer = gameState.currentPlayer;
+            console.log(gameState.currentPlayer);
+            console.log(currentPlayer);
+
+            // Event listeners for source buttons
+            const sourceButtons = document.querySelectorAll('.source-button');
+            sourceButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const source = button.textContent;
+                    const availableColors = await getAvailableColors(source);
+                    showColorSection(currentPlayer, availableColors, source);
+                });
+            });
+        }
+
+    </script>
+    <script>
+        function updateEnvironment(gameState) {
+            const playersInfo = document.getElementById('players-info');
+            const sourceInfo = document.getElementById('source-info');
+
+            // Clear previous content
+            playersInfo.innerHTML = '';
+            sourceInfo.innerHTML = '';
+
+            // Update players' information
+            gameState.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.innerHTML = `
+                    <h3>Player ${index + 1}</h3>
+                    <p>Score: ${player.score}</p>
+                    <h4>Wall</h4>
+                    <pre>${JSON.stringify(player.wall, null, 2)}</pre>
+                    <h4>Pattern Lines</h4>
+                    <pre>${JSON.stringify(player.patternLines, null, 2)}</pre>
+                    <h4>Floor</h4>
+                    <pre>${JSON.stringify(player.floor, null, 2)}</pre>
+                `;
+                playersInfo.appendChild(playerDiv);
+            });
+
+            // Update source information
+            sourceInfo.innerHTML = `
+                <h3>Sources</h3>
+                <pre>${JSON.stringify(gameState.factories, null, 2)}</pre>
+                <h4>Center</h4>
+                <pre>${JSON.stringify(gameState.center.tiles, null, 2)}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+function displayGameState(gameState) {
+            // Display factories
+            console.log('displayGameState called');
+            const factoriesDiv = document.getElementById('factories');
+            factoriesDiv.innerHTML = ''; // Clear previous content
+            gameState.factories.forEach((factory, index) => {
+                const factoryDiv = document.createElement('div');
+                factoryDiv.textContent = `Factory ${index + 1}: ${factory.tiles.join(', ')}`;
+                factoriesDiv.appendChild(factoryDiv);
+            });
+
+            // Display center area
+            const centerDiv = document.getElementById('center');
+            centerDiv.innerHTML = ''; // Clear previous content
+            centerDiv.textContent = `Center Area: ${gameState.center.tiles.join(', ')}`;
+
+            // Display player boards
+            const playersDiv = document.getElementById('players');
+            playersDiv.innerHTML = ''; // Clear previous content
+            gameState.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.textContent = `Player ${index + 1}: Pattern Lines: ${player.patternLines}, Wall: ${player.wall}, Floor: ${player.floor}`;
+                playersDiv.appendChild(playerDiv);
+            });
+        }
+
+        // Call the displayGameState function with the game state provided by the Flask app
+        const gameState = {{ game_state|safe }};
+        displayGameState(JSON.parse(gameState));

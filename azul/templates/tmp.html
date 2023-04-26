@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul</title>
+    <script>
+        async function getAvailableColors(source) {
+            // Replace this with the actual function to fetch available colors from the server
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(['red', 'blue', 'yellow']);
+                }, 1000);
+            });
+        }
+
+        async function getAvailablePatternLines(color) {
+            // Replace this with the actual function to fetch available pattern lines from the server
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([1, 2, 3, 4, 5]);
+                }, 1000);
+            });
+        }
+
+        function showColorSection(availableColors, source) {
+            // Show the color section and hide the source section
+            document.getElementById('source-section').style.display = 'none';
+            document.getElementById('color-section').style.display = 'block';
+
+            // Create color buttons based on available colors
+            const colorContainer = document.getElementById('color-container');
+            colorContainer.innerHTML = '';
+            availableColors.forEach(color => {
+                const button = document.createElement('button');
+                button.textContent = color;
+                button.classList.add('color-button');
+                button.addEventListener('click', async () => {
+                    const availablePatternLines = await getAvailablePatternLines(color);
+                    showPatternLineSection(availablePatternLines, source, color);
+                });
+                colorContainer.appendChild(button);
+            });
+        }
+
+        function showPatternLineSection(availablePatternLines, source, color) {
+            // Show the pattern line section and hide the color section
+            document.getElementById('color-section').style.display = 'none';
+            document.getElementById('pattern-line-section').style.display = 'block';
+
+            // Create pattern line buttons based on available pattern lines
+            const patternLineContainer = document.getElementById('pattern-line-container');
+            patternLineContainer.innerHTML = '';
+            availablePatternLines.forEach(patternLine => {
+                const button = document.createElement('button');
+                button.textContent = patternLine;
+                button.classList.add('pattern-line-button');
+                button.addEventListener('click', () => {
+                    // Perform the action with the selected source, color, and pattern line
+                    console.log(`Selected source: ${source}`);
+                    console.log(`Selected color: ${color}`);
+                    console.log(`Selected pattern line: ${patternLine}`);
+                });
+                patternLineContainer.appendChild(button);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="source-section">
+        <h2>Select Source</h2>
+        <div id="source-container">
+            <button class="source-button">Factory 1</button>
+            <button class="source-button">Factory 2</button>
+            <button class="source-button">Center</button>
+        </div>
+    </div>
+
+    <div id="color-section" style="display: none;">
+        <h2>Select Color</h2>
+        <div id="color-container"></div>
+    </div>
+
+    <div id="pattern-line-section" style="display: none;">
+        <h2>Select Pattern Line</h2>
+        <div id="pattern-line-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // gameState loading
+            gameState = {{ game_state | tojson | safe }};
+
+                    // Event listeners for source buttons
+        const sourceButtons = document.querySelectorAll('.source-button');
+        sourceButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const source = button.textContent;
+                const availableColors = await getAvailableColors(source);
+                showColorSection(availableColors, source);
+            });
+        });
+    });
+</script>
+</body>
+</html>
