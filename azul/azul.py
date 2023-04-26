@@ -13,6 +13,7 @@ class Azul:
         self.center = Center()
         self.factories_dict = {"Factory %d" % i: self.factories[i] for i in range(5)}
         self.factories_dict["Center"] = self.center
+        self.player_dict = {"Player %d" % (i + 1): self.players[i] for i in range(num_players)}
         self.current_round = 0
         self.game_over = False
         self.tile_bag = self.generate_tile_bag()

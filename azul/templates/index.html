@@ -119,8 +119,8 @@
 
         function initializeSourceButtons(gameState) {
             console.log(gameState);
-            const currentPlayer = gameState.currentPlayer;
-            console.log(gameState.currentPlayer);
+            var tmp = JSON.parse(gameState)
+            const currentPlayer = tmp.currentPlayer;
             console.log(currentPlayer);
 
             // Event listeners for source buttons

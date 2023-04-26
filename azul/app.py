@@ -46,8 +46,9 @@ def available_colors():
 def available_pattern_lines():
     print('request is:' ,request.form)
     color = request.form['color']
-    player = request.form['player_id']
-    print('player is:', player)
+    player_id = request.form['player_id']
+    player = game.player_dict['Player %s' % player_id]
+    # print('player is:', player)
     available_pattern_lines = game.get_available_pattern_lines(player,color)
     return json.dumps(available_pattern_lines)
 
