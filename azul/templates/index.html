@@ -49,14 +49,14 @@
                 button.classList.add('color-button');
                 button.addEventListener('click', async () => {
                     const availablePatternLines = await getAvailablePatternLines(currentPlayer, color);
-                    showPatternLineSection(availablePatternLines, source, color);
+                    showPatternLineSection(currentPlayer, availablePatternLines, source, color);
                 });
                 colorContainer.appendChild(button);
             });
         }
 
 
-        function showPatternLineSection(availablePatternLines, source, color) {
+        function showPatternLineSection(currentPlayer, availablePatternLines, source, color) {
             // Show the pattern line section and hide the color section
             document.getElementById('color-section').style.display = 'none';
             document.getElementById('pattern-line-section').style.display = 'block';
@@ -73,6 +73,7 @@
                     console.log(`Selected source: ${source}`);
                     console.log(`Selected color: ${color}`);
                     console.log(`Selected pattern line: ${patternLine}`);
+                    performAction(currentPlayer, source, color, patternLine);
                 });
                 patternLineContainer.appendChild(button);
             });
@@ -112,6 +113,7 @@
             // gameState loading
             gameState = {{ game_state | tojson | safe }};
             console.log(gameState);
+            updateEnvironment(gameState);
 
             // Initialize source buttons with event listeners
             initializeSourceButtons(gameState);
@@ -133,18 +135,18 @@
                 });
             });
         }
-
     </script>
     <script>
-        function updateEnvironment(gameState) {
+        function updateEnvironment(gameStateStr) {
             const playersInfo = document.getElementById('players-info');
             const sourceInfo = document.getElementById('source-info');
-
+            
             // Clear previous content
             playersInfo.innerHTML = '';
             sourceInfo.innerHTML = '';
 
             // Update players' information
+            var gameState = JSON.parse(gameStateStr)
             gameState.players.forEach((player, index) => {
                 const playerDiv = document.createElement('div');
                 playerDiv.innerHTML = `
@@ -168,6 +170,79 @@
                 <pre>${JSON.stringify(gameState.center.tiles, null, 2)}</pre>
             `;
         }
+    </script>
+    <script>
+        async function performAction(currentPlayer, source, color, patternLine) {
+            // Update game state with the selected source, color, and pattern line
+            // ...
+
+            // Send the updated game state to the server
+            const response = await fetch('/update_game_state', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(gameState)
+            });
+
+            // Get the updated game state from the server
+            const updatedGameState = await response.json();
+            gameState = updatedGameState;
+
+            // Call the next step in the game
+            nextStep();
+        }
+    </script>
+    <script>
+        function nextStep() {
+            if (isRoundOver()) {
+                // If the round is over, perform the end-of-round actions
+                endRound();
+            } else {
+                // If the game is not over, switch to the next player
+                switchPlayer();
+
+                // Update the environment
+                updateEnvironment(gameState);
+
+                // Initialize the source buttons with the updated game state
+                initializeSourceButtons(gameState);
+            }
+        }
+        function isRoundOver() {
+            // Check if the round is over based on the game state
+            // ...
+
+            return roundOver;
+        }
+        function endRound() {
+            // Perform the end-of-round actions
+            // ...
+
+            if (isGameOver()) {
+                // If the game is over, show the final results
+                showFinalResults();
+            } else {
+                // If the game is not over, start a new round
+                startNewRound();
+            }
+        }
+        function isGameOver() {
+            // Check if the game is over based on the game state
+            // ...
+
+            return gameOver;
+        }
+        function startNewRound() {
+            // Start a new round
+            // ...
+        }
+        function switchPlayer() {
+            // Switch to the next player
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+        }
+
+
     </script>
 </body>
 </html>
