@@ -1,0 +1,118 @@
+/* Define base styles for the board sections */
+.container {
+    width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.board-section {
+    margin-bottom: 20px;
+}
+
+/* Define styles for the tiles */
+.tile {
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: 50px; /* Tile size */
+    height: 50px;
+    display: inline-block;
+    margin: 4px;
+    box-sizing: border-box;
+    border: 1px solid #555; /* Tile border */
+    position: relative; /* Required for absolute positioning of children */
+}
+
+/* Use this class for empty tiles to make them visible as placeholders */
+.tile.empty {
+    background-color: #eee; /* Light grey for empty tile background */
+}
+
+/* Add additional classes for each tile color */
+.tile.blue { background-color: blue; }
+.tile.red { background-color: red; }
+.tile.yellow { background-color: yellow; }
+.tile.black { background-color: black; }
+.tile.white { background-color: white; }
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    margin: 20px auto;
+}
+
+.player-section, .board-section {
+    margin: 0 10px;
+}
+
+.player-section {
+    display: inline-block;
+    vertical-align: top;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.pattern-lines, .wall, .floor-line {
+    margin-bottom: 20px;
+}
+
+.pattern-line {
+    display: flex;
+    align-items: start;
+    justify-content: flex-start;
+    margin-bottom: 4px;
+}
+
+.floor-line {
+    margin: 4px 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.floor-line-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+
+.deduction-points {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 0.8em;
+    color: black; /* Ensure this is visible on both empty and colored tiles */
+}
+
+.highlight {
+    border: 2px solid #ff0000; /* Example: Red, bold border for highlighting */
+}
+
+.notification-banner {
+    background-color: #f8f8f8; /* Light grey background */
+    color: #333; /* Dark text */
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.first-player-marker {
+    width: 50px; /* Tile size */
+    height: 50px;
+    background-color: #fff; /* Background color */
+    border: 1px solid #000; /* Black border */
+    color: #000; /* Black text */
+    font-size: 24px; /* Adjust font size as needed */
+    font-weight: bold; /* Bold text */
+    display: flex;
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+    margin: 5px; /* Adjust margin as needed */
+    cursor: pointer; /* Change cursor to indicate interactiveness */
+}

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azul</title>
+    <script>
+        async function getAvailableColors(source) {
+            const response = await fetch('/available_colors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `source=${encodeURIComponent(source)}`
+            });
+
+            const availableColors = await response.json();
+            return availableColors;
+        }
+
+
+        async function getAvailablePatternLines(playerId, color) {
+            const response = await fetch('/available_pattern_lines', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `player_id=${encodeURIComponent(playerId)}&color=${encodeURIComponent(color)}`
+            });
+
+            const availablePatternLines = await response.json();
+            return availablePatternLines;
+        }
+
+        function showColorSection(currentPlayerId, availableColors, source, gameState, resolve) {
+            // Show the color section and hide the source section
+            document.getElementById('source-section').style.display = 'none';
+            document.getElementById('color-section').style.display = 'block';
+
+            // Create color buttons based on available colors
+            const colorContainer = document.getElementById('color-container');
+            colorContainer.innerHTML = '';
+
+            // Convert the object to an array and iterate over the array
+            Object.values(availableColors).forEach(color => {
+                const button = document.createElement('button');
+                button.textContent = color;
+                button.classList.add('color-button');
+                button.addEventListener('click', async () => {
+                    const availablePatternLines = await getAvailablePatternLines(currentPlayerId, color);
+                    const updatedGameState = showPatternLineSection(currentPlayerId, availablePatternLines, source, color, gameState, resolve);
+
+                    // Resolve the promise to signal that the player's move is complete and pass the updated game state
+                    resolve(updatedGameState);
+                });
+
+                colorContainer.appendChild(button);
+            });
+        }
+
+
+        function showPatternLineSection(currentPlayerId, availablePatternLines, source, color, gameState, resolve) {
+            console.log('availablePatternLines')
+            console.log(availablePatternLines)
+            // Show the pattern line section and hide the color section
+            document.getElementById('color-section').style.display = 'none';
+            document.getElementById('pattern-line-section').style.display = 'block';
+
+            // Create pattern line buttons based on available pattern lines
+            const patternLineContainer = document.getElementById('pattern-line-container');
+            patternLineContainer.innerHTML = '';
+            availablePatternLines.forEach(patternLine => {
+                const button = document.createElement('button');
+                button.textContent = patternLine;
+                button.classList.add('pattern-line-button');
+                button.addEventListener('click', () => {
+                    // Perform the action with the selected source, color, and pattern line
+                    console.log(`Selected source: ${source}`);
+                    console.log(`Selected color: ${color}`);
+                    console.log(`Selected pattern line: ${patternLine}`);
+                    performAction(currentPlayerId, source, color, patternLine, gameState, resolve);
+                });
+
+                patternLineContainer.appendChild(button);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="environment-section">
+        <h2>Environment</h2>
+        <div id="players-info"></div>
+        <div id="source-info"></div>
+    </div>
+    <div id="source-section">
+        <h2>Select Source</h2>
+        <div id="source-container"></div>
+    </div>
+
+    <div id="color-section" style="display: none;">
+        <h2>Select Color</h2>
+        <div id="color-container"></div>
+    </div>
+
+    <div id="pattern-line-section" style="display: none;">
+        <h2>Select Pattern Line</h2>
+        <div id="pattern-line-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // gameState loading
+            gameStateStr = {{ game_state | tojson | safe }};
+            var gameState = JSON.parse(gameStateStr)
+            console.log(gameState);
+            updateEnvironment(gameState);
+
+            // Initialize source buttons with event listeners
+            playGame(gameState);
+        });
+
+        function initializeSourceButtons(gameState, resolve) {
+            console.log(gameState);
+            const currentPlayerId = gameState.currentPlayerId;
+            console.log(currentPlayerId);
+
+            // Create source buttons based on gameState
+            const sourceContainer = document.getElementById('source-container');
+            sourceContainer.innerHTML = '';
+
+            for (let i = 0; i < gameState.factories.length; i++) {
+                const button = document.createElement('button');
+                button.textContent = `Factory ${i}`;
+                button.classList.add('source-button');
+                button.addEventListener('click', async () => {
+                    const source = button.textContent;
+                    const availableColors = await getAvailableColors(source);
+                    showColorSection(currentPlayerId, availableColors, source, gameState, resolve);
+                });
+                sourceContainer.appendChild(button);
+            }
+
+            // Add a button for the Center
+            const centerButton = document.createElement('button');
+            centerButton.textContent = "Center";
+            centerButton.classList.add('source-button');
+            centerButton.addEventListener('click', async () => {
+                const source = centerButton.textContent;
+                const availableColors = await getAvailableColors(source);
+                showColorSection(currentPlayerId, availableColors, source, gameState, resolve);
+            });
+            sourceContainer.appendChild(centerButton);
+        }
+
+
+    </script>
+    <script>
+        async function playGame(gameState) {
+            while (!gameState.isGameOver) {
+                console.log("New round");
+
+                while (!gameState.isRoundOver) {
+                    console.log("same round");
+                    const currentPlayerId = gameState.currentPlayerId;
+                    console.log("current player");
+                    console.log(currentPlayerId);
+
+                    // Initialize source buttons with event listeners
+                    gameState = await initializeSourceButtonsAndAwaitMove(gameState);
+
+                    // Update the game state
+                    gameState = await updateGameState();
+                    updateEnvironment(gameState);
+
+                    console.log("inside loop")
+                    console.log(gameState)
+                    console.log(gameState.isRoundOver)
+                }
+
+                gameState.endRound();
+                console.log("End round");
+            }
+            console.log(`Player ${gameState.winner + 1} wins the game!`);
+        }
+
+
+        async function initializeSourceButtonsAndAwaitMove(gameState) {
+            return new Promise(async (resolve) => {
+                initializeSourceButtons(gameState, resolve);
+            });
+        }
+
+
+        async function updateGameState() {
+            // Send the selections to the server
+            const response = await fetch('/update_game_state', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: ''
+            });
+
+            // Get the updated game state from the server
+            const updatedGameState = await response.json();
+            return updatedGameState;
+        }
+    </script>
+    <script>
+        function updateEnvironment(gameState) {
+            const playersInfo = document.getElementById('players-info');
+            const sourceInfo = document.getElementById('source-info');
+
+            // Clear previous content
+            playersInfo.innerHTML = '';
+            sourceInfo.innerHTML = '';
+
+            // Update players' information
+            gameState.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.innerHTML = `
+                    <h3>Player ${index + 1}</h3>
+                    <p>Score: ${player.score}</p>
+                    <h4>Wall</h4>
+                    <pre>${JSON.stringify(player.wall, null, 2)}</pre>
+                    <h4>Pattern Lines</h4>
+                    <pre>${JSON.stringify(player.patternLines, null, 2)}</pre>
+                    <h4>Floor</h4>
+                    <pre>${JSON.stringify(player.floor, null, 2)}</pre>
+                `;
+                playersInfo.appendChild(playerDiv);
+            });
+
+            // Update source information
+            sourceInfo.innerHTML = `
+                <h3>Sources</h3>
+                <pre>${JSON.stringify(gameState.factories, null, 2)}</pre>
+                <h4>Center</h4>
+                <pre>${JSON.stringify(gameState.center.tiles, null, 2)}</pre>
+            `;
+        }
+    </script>
+    <script>
+        async function performAction(currentPlayerId, source, color, patternLine, gameState, resolve) {
+            // Send the selections to the server
+            const response = await fetch('/perform_action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    currentPlayerId: currentPlayerId,
+                    source: source,
+                    color: color,
+                    patternLine: patternLine
+                })
+            });
+
+            // Clear color and pattern line sections
+            document.getElementById('color-container').innerHTML = '';
+            document.getElementById('pattern-line-container').innerHTML = '';
+
+            // Get the updated game state from the server
+            const updatedGameState = await response.json();
+
+            // Update the game state
+            gameState.players = updatedGameState.players;
+            gameState.currentPlayerId = updatedGameState.currentPlayerId;
+            gameState.factories = updatedGameState.factories;
+            gameState.center = updatedGameState.center;
+            gameState.isRoundOver = updatedGameState.isRoundOver;
+            gameState.isGameOver = updatedGameState.isGameOver;
+            gameState.winner = updatedGameState.winner;
+
+            // Resolve the promise to signal that the player's move is complete
+            resolve(gameState);
+        }
+
+    </script>
+
+</body>
+</html>

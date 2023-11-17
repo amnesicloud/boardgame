@@ -46,6 +46,8 @@ class Player:
                 break
 
         # Calculate the points based on contiguous tiles in the row and column
+        if same_row == 0 and same_col == 0:
+            points = 1
         if same_row > 0:
             points += same_row + 1
         if same_col > 0:
@@ -66,6 +68,7 @@ class Player:
             'patternLines': self.pattern_lines,
             'wall': self.wall,
             'floor': self.floor_line,
+            'score': self.score
         }
 
     def completed_rows(self):
@@ -85,12 +88,25 @@ class Player:
 
     def deduct_floor_line_points(self):
         # Deduct points according to the floor line tiles
-        deductions = [1, 1, 2, 2, 2, 3, 3, -1]
-        self.score -= sum(deductions[min(len(self.floor_line) - 1, len(deductions) - 1)] for _ in range(len(self.floor_line)))
+        deductions = [1, 1, 2, 2, 2, 3, 3]
+
+        # print("penalty score is", sum(deductions[min(len(self.floor_line) - 1, len(deductions) - 1)] for _ in range(len(self.floor_line))))
+        # self.score -= sum(deductions[min(len(self.floor_line) - 1, len(deductions) - 1)] for _ in range(len(self.floor_line)))
+        # print("player", self.player_id,"score is:", self.score)
+
+        deduct_point = 0
+        for i in range(len(self.floor_line)):
+            if i >= len(deductions):
+                break
+            deduct_point += deductions[i]
+
+        print("penalty score is", deduct_point)
+        self.score -= deduct_point
         print("player", self.player_id,"score is:", self.score)
 
     def add_bonus_points(self):
         # Add bonus points for completed rows, columns, and sets of all 5 colors
+        print("add bonus point")
         completed_rows = sum(1 for row in self.wall if all(cell is not None for cell in row))
         completed_columns = sum(1 for col in range(5) if all(self.wall[row][col] is not None for row in range(5)))
         completed_sets = sum(1 for color in set(cell for row in self.wall for cell in row if cell is not None) if sum(cell == color for row in self.wall for cell in row) == 5)
@@ -164,6 +180,7 @@ class Player:
 
     def add_tiles_to_pattern_line(self, color, tiles, pattern_line_idx):
         # Calculate the number of free spaces in the pattern line
+        print("pattern_line_idx", type(pattern_line_idx), pattern_line_idx)
         free_spaces = pattern_line_idx + 1 - len(self.pattern_lines[pattern_line_idx])
 
         # If there are more tiles than free spaces, move the excess tiles to the floor line
@@ -215,25 +232,41 @@ class HumanPlayer(Player):
         return available_actions[chosen_action_index]
 
     def choose_source(self, available_sources):
-        for ind, source in enumerate(available_sources):
-            if isinstance(source, Factory):
-                print(ind, "factory ID:", source.factory_id,"tiles", source.tiles)
-            else:
-                print(ind, "factory ID:", source.factory_id,"tiles", source.tiles)
-        source_idx = int(input("Choose a source index from available sources: "))
-        return available_sources[source_idx]
+        while True:
+            try:
+                for ind, source in enumerate(available_sources):
+                    if isinstance(source, Factory):
+                        print(ind, "factory ID:", source.factory_id,"tiles", source.tiles)
+                    else:
+                        print(ind, "factory ID:", source.factory_id,"tiles", source.tiles)
+                source_idx = int(input("Choose a source index from available sources: "))
+                return available_sources[source_idx]
+            except Exception as e:
+                print(e)
+                print("please re-input")
 
     def choose_color(self, available_colors):
-        for key in available_colors:
-            print(key, available_colors[key])
-        color_idx = int(input("Choose a color index from available colors: "))
-        return available_colors[color_idx]
+        while True:
+            try:
+                for key in available_colors:
+                    print(key, available_colors[key])
+                color_idx = int(input("Choose a color index from available colors: "))
+                return available_colors[color_idx]
+            except Exception as e:
+                print(e)
+                print("please re-input")
+
 
     def choose_pattern_line(self, available_pattern_lines):
-        for ind, available_pattern_line in enumerate(available_pattern_lines):
-            print(ind, ":", available_pattern_line)
-        pattern_line_idx = int(input("Choose a pattern line index from available pattern lines: "))
-        return available_pattern_lines[pattern_line_idx]
+        while True:
+            try:
+                for ind, available_pattern_line in enumerate(available_pattern_lines):
+                    print(ind, ":", available_pattern_line)
+                pattern_line_idx = int(input("Choose a pattern line index from available pattern lines: "))
+                return available_pattern_lines[pattern_line_idx]
+            except Exception as e:
+                print(e)
+                print("please re-input")
 
 
 class RLPlayer(Player):

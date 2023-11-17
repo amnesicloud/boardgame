@@ -33,7 +33,7 @@ class Factory:
 
     def to_dict(self):
         return {
-            'tiles': self.tiles,
+            ("Factory_%s" % str(self.factory_id)): self.tiles,
         }
 
 class Center(Factory):

@@ -4,28 +4,44 @@ from factory import Factory, Center
 class Azul:
     def __init__(self, num_players, player_list=None):
         self.num_players = num_players
-        self.players = player_list or [Player(player_id) for player_id in range(num_players)]
-        self.first_player_marker_owner = random.choice(self.players)
-        print("Initial first player marker owner:", self.first_player_marker_owner)
+        self.num_factories = 5
+        self.first_player_marker_owner_id = random.randint(0, self.num_players - 1)
+        self.first_player_marker_owner = None
+        self.current_player_id = self.first_player_marker_owner_id
+        if player_list is None:
+            self.player_dict = {player_id: Player(player_id) for player_id in range(self.num_players)}
+            self.players = [self.player_dict[player_id] for player_id in range(num_players)]
+        else:
+            self.player_dict = {player.player_id: player for player in player_list}
+            self.players = [self.player_dict[player_id] for player_id in range(num_players)]
+        print("Initial first player marker owner id:", self.first_player_marker_owner_id)
+        print("player list:", self.players)
+        print("player id list:", [player.player_id for player in self.players])
+        print("player dict:", self.player_dict)
+
         self.tile_bag = []
-        # self.factories = [Factory(ind) for ind in range(num_players * 2 + 1)]
-        self.factories = [Factory(ind) for ind in range(5)]
+
+        self.factories = [Factory(ind) for ind in range(self.num_factories)]
         self.center = Center()
-        self.factories_dict = {"Factory %d" % i: self.factories[i] for i in range(5)}
+        self.factories_dict = {"Factory_%d" % i: self.factories[i] for i in range(self.num_factories)}
         self.factories_dict["Center"] = self.center
-        self.player_dict = {"Player %d" % (i + 1): self.players[i] for i in range(num_players)}
+
         self.current_round = 0
         self.game_over = False
         self.tile_bag = self.generate_tile_bag()
         self.refill_factories()
-        self.current_player = self.first_player_marker_owner
+        self.has_winner = False
+        self.winner = None
 
     def to_dict(self):
         return {
             'factories': [factory.to_dict() for factory in self.factories],
             'center': self.center.to_dict(),
             'players': [player.to_dict() for player in self.players],
-            'currentPlayer': str(self.current_player.player_id)
+            'currentPlayerId': str(self.current_player_id),
+            'isRoundOver':self.is_round_over(),
+            'hasWinner': self.has_winner,
+            'winner': self.winner
         }
 
     def generate_tile_bag(self):
@@ -115,13 +131,14 @@ class Azul:
             self.first_player_marker_owner = player
             print("player", player.player_id, "is the first player next round")
             player.floor_line.append("F")
+        self.current_player_id = (self.current_player_id + 1) % self.num_players
         print("now your pattern lines are", player.pattern_lines)
         print("now your floor line is", player.floor_line)
 
     def get_winner(self):
         # Calculate the final scores for all players
-        for player in self.players:
-            player.calculate_final_score()
+        # for player in self.players:
+        #     player.calculate_final_score() # 加分
 
         # Sort the players by their scores, descending
         sorted_players = sorted(self.players, key=lambda p: p.score, reverse=True)
@@ -141,7 +158,7 @@ class Azul:
             len(p.floor_line) for p in players_with_most_rows)]
         if len(players_with_fewest_floor_tiles) == 1:
             return players_with_fewest_floor_tiles[0]
-
+        self.has_winner = True
         # If there is still a tie, the victory is shared
         return players_with_fewest_floor_tiles
 
@@ -171,16 +188,22 @@ class Azul:
 
     def end_round(self):
         for player in self.players:
+            print("player point before move to wall", player.score)
             player.move_tiles_from_pattern_lines_to_wall()
-
+            print("player point after move to wall", player.score)
             player.deduct_floor_line_points()
+            player.score = max(player.score, 0)
 
         # Check if the first player marker has been taken
         for player in self.players:
-            if player.floor_line[0] == 'F':
-                # player.floor_line[0] = False
-                self.first_player_marker_owner = player
-                break
+            if len(player.floor_line) > 0:
+                if player.floor_line[0] == 'F':
+                    # player.floor_line[0] = False
+                    self.first_player_marker_owner_id = player.player_id
+                    self.first_player_marker_owner = None
+                    break
+        self.current_player_id = self.first_player_marker_owner_id
+        for player in self.players:
             player.floor_line = []
 
         # Refill factories
@@ -192,14 +215,12 @@ class Azul:
             for player in self.players:
                 player.add_bonus_points()
             self.winner = self.get_winner()
-        # else:
-        #     self.start_new_round()
 
 
     def start_new_round(self):
         # Determine the starting player
-        print("First player marker owner before starting new round:", self.first_player_marker_owner)
-        starting_player = self.players.index(self.first_player_marker_owner)
+        # print("First player marker owner before starting new round:", self.first_player_marker_owner)
+        starting_player = self.players[0]
 
         # Reset the "1st Player" marker owner for the next round
         self.first_player_marker_owner = None
@@ -226,6 +247,7 @@ class Azul:
     def is_game_over(self):
         for player in self.players:
             if any(all(cell is not None for cell in row) for row in player.wall):
+                self.game_over = True
                 return True
         return False
 

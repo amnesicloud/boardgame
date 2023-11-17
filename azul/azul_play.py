@@ -9,8 +9,10 @@ def play_azul(player1, player2):
         print("*" * 50)
         print("new round")
         while not game.is_round_over():
-            for player in game.players:
-                game.current_player = player
+            for ind in range(game.num_players):
+                print(game.player_dict)
+                print(game.player_dict.keys())
+                player = game.player_dict[(game.first_player_marker_owner_id + ind) % game.num_players]
                 print("=" * 50)
                 print("player%d's turn" % player.player_id)
                 print("player%d's score is" % player.player_id, player.score)
@@ -26,8 +28,12 @@ def play_azul(player1, player2):
                 game.perform_action(player, source, color, pattern_line_idx)
                 if game.is_round_over():
                     break
+
         game.end_round()
         print("end round")
+        for player in game.players:
+            print(player.player_id, ":", player.score)
+
 
     winner = game.get_winner()
     print(f"Player {winner + 1} wins the game!")

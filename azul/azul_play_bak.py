@@ -50,5 +50,7 @@ def main():
 
     play_azul(player1, player2)
 
+    sum(deductions[min(len(floor_line) - 1, len(deductions) - 1)] for _ in range(len(floor_line)))
+
 if __name__ == "__main__":
     main()
